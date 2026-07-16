@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Бюджет — план и факт</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EFF2ED; --surface:#FFFFFF; --surface2:#F7F9F5;
+    --ink:#17211C; --muted:#69786F; --line:#DEE4DC;
+    --green:#1E7A5A; --green-soft:#E2F0E9;
+    --amber:#A85B22; --amber-soft:#F5E8DC;
+    --red:#B03A2E; --red-soft:#F6E3E0;
+    --blue:#33566E;
+    --radius:14px;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:'Manrope',system-ui,sans-serif;
+    background:var(--bg); color:var(--ink);
+    min-height:100vh; padding-bottom:48px;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:0 14px}
+
+  /* header */
+  header{padding:20px 0 10px}
+  .head-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .brand{font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand span{color:var(--green)}
+  .month-nav{display:flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:4px}
+  .month-nav button{border:0;background:transparent;width:32px;height:32px;border-radius:99px;font-size:16px;cursor:pointer;color:var(--muted)}
+  .month-nav button:hover{background:var(--surface2);color:var(--ink)}
+  .icon-btn{width:40px;height:40px;border:1px solid var(--line);border-radius:99px;background:var(--surface);color:var(--muted);font-size:16px;cursor:pointer}
+  .icon-btn:hover{color:var(--ink);background:var(--surface2)}
+  .month-label{font-weight:700;font-size:14px;min-width:110px;text-align:center;text-transform:capitalize}
+
+  /* summary */
+  .summary{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-top:12px}
+  .summary .cap{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  .big{font-family:var(--mono);font-weight:700;font-size:34px;letter-spacing:-.02em;margin:2px 0 14px;font-variant-numeric:tabular-nums}
+  .big.neg{color:var(--red)}
+  .band{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--surface2);border:1px solid var(--line)}
+  .band div{height:100%}
+  .band .seg-fact{background:var(--amber)}
+  .band .seg-plan{background:repeating-linear-gradient(45deg,#cfd8cf 0 4px,#e4eae2 4px 8px)}
+  .band .seg-free{background:var(--green)}
+  .legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:12px;color:var(--muted)}
+  .legend b{font-family:var(--mono);color:var(--ink);font-weight:600}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+  .stat{background:var(--surface2);border-radius:10px;padding:10px 12px}
+  .stat .cap{font-size:11px}
+  .stat .val{font-family:var(--mono);font-weight:600;font-size:15px;margin-top:2px;font-variant-numeric:tabular-nums}
+
+  /* tabs */
+  .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:#E3E8E0;border-radius:12px;padding:5px;margin:16px 0 14px}
+  .tabs button{border:0;border-radius:9px;padding:10px 0;font-family:inherit;font-weight:700;font-size:14px;color:var(--muted);background:transparent;cursor:pointer}
+  .tabs button.active{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(23,33,28,.08)}
+
+  /* sections */
+  .cat{margin-bottom:18px}
+  .cat-head{display:flex;justify-content:space-between;align-items:baseline;padding:0 4px 8px}
+  .cat-title{font-weight:800;font-size:15px}
+  .cat-sum{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .row{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+  .row:last-child{border-bottom:0}
+  .row:hover{background:var(--surface2)}
+  .row .info{flex:1;min-width:0}
+  .row .name{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .bar{height:5px;border-radius:3px;background:var(--surface2);margin-top:7px;overflow:hidden}
+  .row .bar i{display:block;height:100%;background:var(--green);border-radius:3px}
+  .row .bar i.over{background:var(--red)}
+  .row .nums{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .row .fact{font-weight:600;font-size:14px}
+  .row .plan{font-size:11px;color:var(--muted);margin-top:2px}
+  .row .edit{border:0;background:transparent;color:var(--muted);font-size:15px;cursor:pointer;padding:6px;border-radius:8px}
+  .row .edit:hover{background:var(--line);color:var(--ink)}
+  .add-line{display:block;width:100%;border:0;background:transparent;color:var(--green);font-family:inherit;font-weight:700;font-size:13px;padding:12px;cursor:pointer}
+  .add-line:hover{background:var(--green-soft)}
+
+  .left-pos{color:var(--green)} .left-zero{color:var(--muted)}
+
+  /* journal */
+  .day-head{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:14px 4px 6px}
+  .jrow{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
+  .jrow:last-child{border-bottom:0}
+  .jrow .tag{width:8px;height:8px;border-radius:99px;flex:none}
+  .jrow .t-exp{background:var(--amber)} .jrow .t-inc{background:var(--green)}
+  .jrow .info{flex:1;min-width:0}
+  .jrow .name{font-weight:600;font-size:14px}
+  .jrow .note{font-size:12px;color:var(--muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .jrow .amt{font-family:var(--mono);font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
+  .jrow .amt.inc{color:var(--green)}
+  .jrow .del{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:15px;padding:6px;border-radius:8px}
+  .jrow .del:hover{background:var(--red-soft);color:var(--red)}
+  .empty{padding:34px 20px;text-align:center;color:var(--muted);font-size:14px}
+
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(23,33,28,.45);display:none;align-items:flex-end;justify-content:center;z-index:50}
+  .overlay.open{display:flex}
+  .modal{background:var(--surface);border-radius:18px 18px 0 0;width:100%;max-width:640px;padding:20px 18px 26px;animation:up .18s ease}
+  @keyframes up{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
+  @media(prefers-reduced-motion:reduce){.modal{animation:none}}
+  .modal h3{font-size:17px;font-weight:800;margin-bottom:14px}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px}
+  .field input,.field select{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-family:inherit;font-size:15px;background:var(--surface2);color:var(--ink)}
+  .field input[type=number]{font-family:var(--mono)}
+  .field input:focus,.field select:focus{outline:2px solid var(--green);outline-offset:-1px;background:#fff}
+  .m-actions{display:flex;gap:8px;margin-top:16px}
+  .btn{flex:1;border:0;border-radius:11px;padding:13px;font-family:inherit;font-weight:800;font-size:15px;cursor:pointer}
+  .btn-primary{background:var(--green);color:#fff}
+  .btn-primary:hover{background:#186349}
+  .btn-ghost{background:var(--surface2);color:var(--ink)}
+  .btn-danger{background:transparent;color:var(--red);flex:0 0 auto;padding:13px 14px}
+  .btn-danger:hover{background:var(--red-soft)}
+  .hint{font-size:12px;color:var(--muted);margin-top:8px;text-align:center}
+
+  @media(min-width:520px){
+    .overlay{align-items:center;padding:20px}
+    .modal{border-radius:18px;max-width:420px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="head-row">
+      <div class="brand">Бюджет<span>.</span></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="month-nav">
+          <button id="prevM" aria-label="Предыдущий месяц">‹</button>
+          <div class="month-label" id="monthLabel"></div>
+          <button id="nextM" aria-label="Следующий месяц">›</button>
+        </div>
+        <button class="icon-btn" id="menuBtn" aria-label="Резервная копия" title="Резервная копия">⇅</button>
+      </div>
+    </div>
+
+    <div class="summary">
+      <div class="cap">Остаток (доход − факт)</div>
+      <div class="big" id="bigLeft">0 ₽</div>
+      <div class="band" id="band"></div>
+      <div class="legend">
+        <span><i class="dot" style="background:var(--amber)"></i>Потрачено <b id="lgFact"></b></span>
+        <span><i class="dot" style="background:#cfd8cf"></i>Ещё по плану <b id="lgPlan"></b></span>
+        <span><i class="dot" style="background:var(--green)"></i>Свободно <b id="lgFree"></b></span>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="cap">Доход всего</div><div class="val" id="stIncome"></div></div>
+        <div class="stat"><div class="cap">Расход по плану</div><div class="val" id="stPlan"></div></div>
+        <div class="stat"><div class="cap">Остаток плана</div><div class="val" id="stPlanLeft"></div></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button id="tab-exp" class="active" onclick="setTab('exp')">Расходы</button>
+    <button id="tab-inc" onclick="setTab('inc')">Доходы</button>
+    <button id="tab-log" onclick="setTab('log')">Журнал</button>
+  </div>
+
+  <main id="content"></main>
+</div>
+
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+
+<script>
+/* ---------- constants ---------- */
+const CATS = [
+  {id:'need',   label:'Потребности'},
+  {id:'want',   label:'Желания'},
+  {id:'invest', label:'Инвестиции / долг'},
+];
+const MONTHS = ['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+
+const SEED_ITEMS = [
+  ['need','Заправка',15500],['need','Продукты',15000],['need','Ком. услуги',0],
+  ['need','Связь',3720],['need','Гигиена',2000],['need','Лекарства',2000],
+  ['need','Детское питание',7000],['need','Детская гигиена',3000],
+  ['need','Доп. расходы / обед',5500],['need','Кофе',0],
+  ['want','Одежда',5000],['want','Развлечения',0],
+  ['invest','Макбук',13700],['invest','Часы',5700],
+];
+const SEED_STORES = ['Инжир 1','Инжир 2','Инжир 3','Инжир 4','Инжир 5','Лам','Терек'];
+
+/* ---------- state ---------- */
+let cur = new Date(); cur = {y:cur.getFullYear(), m:cur.getMonth()};
+let data = null;
+let tab = 'exp';
+let memStore = {};                     // fallback if window.storage is unavailable
+let saveTimer = null;
+
+const uid = () => Math.random().toString(36).slice(2,9);
+const mKey = () => 'budget:' + cur.y + '-' + String(cur.m+1).padStart(2,'0');
+const fmt = n => (Math.round(n)||0).toLocaleString('ru-RU') + ' ₽';
+const todayISO = () => new Date().toISOString().slice(0,10);
+
+function blank(){
+  return {
+    items: SEED_ITEMS.map(([cat,name,plan]) => ({id:uid(),cat,name,plan})),
+    stores: SEED_STORES.map(name => ({id:uid(),name,rate:18600})),
+    entries: [],        // {id,itemId,date,amount,note}
+    withdrawals: [],    // {id,storeId,date,amount}
+  };
+}
+
+/* ---------- storage ---------- */
+async function sGet(key){
+  try{ if(window.storage){ const r = await window.storage.get(key); return r ? r.value : null; } }
+  catch(e){ /* key missing */ }
+  try{ const v = localStorage.getItem(key); if(v!==null) return v; }catch(e){}
+  return memStore[key] ?? null;
+}
+async function sSet(key,val){
+  memStore[key] = val;
+  try{ if(window.storage){ await window.storage.set(key,val); return; } }catch(e){}
+  try{ localStorage.setItem(key,val); }catch(e){ console.error('storage',e); }
+}
+function sKeys(){
+  const keys = [];
+  try{ for(let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if(k && k.startsWith('budget:')) keys.push(k); } }catch(e){}
+  return keys;
+}
+function save(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=> sSet(mKey(), JSON.stringify(data)), 300);
+}
+
+async function loadMonth(){
+  const raw = await sGet(mKey());
+  if(raw){ try{ data = JSON.parse(raw); }catch(e){ data = blank(); } }
+  else {
+    // carry structure (items, plans, stores) from the closest previous month, up to a year back
+    data = null;
+    let y = cur.y, m = cur.m;
+    for(let i=0;i<12 && !data;i++){
+      m--; if(m<0){m=11;y--;}
+      const prev = await sGet('budget:'+y+'-'+String(m+1).padStart(2,'0'));
+      if(prev){
+        try{
+          const p = JSON.parse(prev);
+          data = { items: p.items.map(it=>({...it})), stores: p.stores.map(s=>({...s})), entries: [], withdrawals: [] };
+        }catch(e){}
+      }
+    }
+    if(!data) data = blank();
+    save();
+  }
+  render();
+}
+
+/* ---------- computed ---------- */
+function factOf(itemId){ return data.entries.filter(e=>e.itemId===itemId).reduce((s,e)=>s+e.amount,0); }
+function takenOf(storeId){ return data.withdrawals.filter(w=>w.storeId===storeId).reduce((s,w)=>s+w.amount,0); }
+function totals(){
+  const plan = data.items.reduce((s,i)=>s+(i.plan||0),0);
+  const fact = data.entries.reduce((s,e)=>s+e.amount,0);
+  const income = data.stores.reduce((s,st)=>s+(st.rate||0),0);
+  return {plan, fact, income, left: income-fact, planLeft: income-plan};
+}
+
+/* ---------- render ---------- */
+function render(){
+  document.getElementById('monthLabel').textContent = MONTHS[cur.m] + ' ' + cur.y;
+  const t = totals();
+
+  const big = document.getElementById('bigLeft');
+  big.textContent = fmt(t.left);
+  big.classList.toggle('neg', t.left < 0);
+
+  const planRemain = Math.max(0, t.plan - t.fact);
+  const free = Math.max(0, t.income - t.fact - planRemain);
+  const base = Math.max(t.income, t.fact + planRemain, 1);
+  document.getElementById('band').innerHTML =
+    '<div class="seg-fact" style="width:'+(t.fact/base*100)+'%"></div>' +
+    '<div class="seg-plan" style="width:'+(planRemain/base*100)+'%"></div>' +
+    '<div class="seg-free" style="width:'+(free/base*100)+'%"></div>';
+  document.getElementById('lgFact').textContent = fmt(t.fact);
+  document.getElementById('lgPlan').textContent = fmt(planRemain);
+  document.getElementById('lgFree').textContent = fmt(free);
+  document.getElementById('stIncome').textContent = fmt(t.income);
+  document.getElementById('stPlan').textContent = fmt(t.plan);
+  document.getElementById('stPlanLeft').textContent = fmt(t.planLeft);
+
+  ['exp','inc','log'].forEach(id => document.getElementById('tab-'+id).classList.toggle('active', tab===id));
+  const c = document.getElementById('content');
+  if(tab==='exp') c.innerHTML = viewExpenses();
+  if(tab==='inc') c.innerHTML = viewIncome();
+  if(tab==='log') c.innerHTML = viewLog();
+}
+
+function esc(s){ return String(s).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch])); }
+
+function viewExpenses(){
+  return CATS.map(cat=>{
+    const items = data.items.filter(i=>i.cat===cat.id);
+    const catFact = items.reduce((s,i)=>s+factOf(i.id),0);
+    const catPlan = items.reduce((s,i)=>s+(i.plan||0),0);
+    const rows = items.map(i=>{
+      const f = factOf(i.id);
+      const pct = i.plan>0 ? Math.min(100, f/i.plan*100) : (f>0?100:0);
+      const over = i.plan>0 && f>i.plan;
+      return '<div class="row" onclick="openEntry(\''+i.id+'\')">'
+        + '<div class="info"><div class="name">'+esc(i.name)+'</div>'
+        + '<div class="bar"><i class="'+(over?'over':'')+'" style="width:'+pct+'%"></i></div></div>'
+        + '<div class="nums"><div class="fact"'+(over?' style="color:var(--red)"':'')+'>'+fmt(f)+'</div>'
+        + '<div class="plan">план '+fmt(i.plan||0)+'</div></div>'
+        + '<button class="edit" aria-label="Изменить" onclick="event.stopPropagation();openItemEdit(\''+i.id+'\')">✎</button>'
+        + '</div>';
+    }).join('');
+    return '<section class="cat"><div class="cat-head"><div class="cat-title">'+cat.label+'</div>'
+      + '<div class="cat-sum">'+fmt(catFact)+' / '+fmt(catPlan)+'</div></div>'
+      + '<div class="card">'+rows
+      + '<button class="add-line" onclick="openItemNew(\''+cat.id+'\')">+ Добавить статью</button></div></section>';
+  }).join('');
+}
+
+function viewIncome(){
+  const rows = data.stores.map(s=>{
+    const taken = takenOf(s.id), left = (s.rate||0) - taken;
+    return '<div class="row" onclick="openWithdraw(\''+s.id+'\')">'
+      + '<div class="info"><div class="name">'+esc(s.name)+'</div>'
+      + '<div class="bar"><i style="width:'+(s.rate>0?Math.min(100,taken/s.rate*100):0)+'%"></i></div></div>'
+      + '<div class="nums"><div class="fact '+(left>0?'left-pos':'left-zero')+'">'+fmt(left)+'</div>'
+      + '<div class="plan">забрал '+fmt(taken)+' из '+fmt(s.rate||0)+'</div></div>'
+      + '<button class="edit" aria-label="Изменить" onclick="event.stopPropagation();openStoreEdit(\''+s.id+'\')">✎</button>'
+      + '</div>';
+  }).join('');
+  const totalRate = data.stores.reduce((s,x)=>s+(x.rate||0),0);
+  const totalTaken = data.stores.reduce((s,x)=>s+takenOf(x.id),0);
+  return '<section class="cat"><div class="cat-head"><div class="cat-title">Магазины</div>'
+    + '<div class="cat-sum">осталось '+fmt(totalRate-totalTaken)+' из '+fmt(totalRate)+'</div></div>'
+    + '<div class="card">'+rows
+    + '<button class="add-line" onclick="openStoreNew()">+ Добавить магазин</button></div>'
+    + '<p class="hint">Нажмите на магазин, чтобы записать полученную сумму</p></section>';
+}
+
+function viewLog(){
+  const evs = [
+    ...data.entries.map(e=>({...e, kind:'exp', label:(data.items.find(i=>i.id===e.itemId)||{}).name||'—'})),
+    ...data.withdrawals.map(w=>({...w, kind:'inc', label:(data.stores.find(s=>s.id===w.storeId)||{}).name||'—'})),
+  ].sort((a,b)=> b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+  if(!evs.length) return '<div class="card"><div class="empty">Записей пока нет.<br>Добавьте расход на вкладке «Расходы» или доход на «Доходы».</div></div>';
+  let html = '', lastDate = '';
+  for(const ev of evs){
+    if(ev.date !== lastDate){
+      if(lastDate) html += '</div>';
+      const d = new Date(ev.date+'T00:00:00');
+      html += '<div class="day-head">'+d.getDate()+' '+MONTHS[d.getMonth()]+'</div><div class="card">';
+      lastDate = ev.date;
+    }
+    html += '<div class="jrow"><span class="tag '+(ev.kind==='exp'?'t-exp':'t-inc')+'"></span>'
+      + '<div class="info"><div class="name">'+esc(ev.label)+'</div>'
+      + (ev.note ? '<div class="note">'+esc(ev.note)+'</div>' : '')
+      + '</div><div class="amt'+(ev.kind==='inc'?' inc':'')+'">'+(ev.kind==='inc'?'+':'−')+fmt(ev.amount)+'</div>'
+      + '<button class="del" aria-label="Удалить" onclick="delEvent(\''+ev.kind+'\',\''+ev.id+'\')">✕</button></div>';
+  }
+  return html + '</div>';
+}
+
+/* ---------- modal ---------- */
+const overlay = document.getElementById('overlay');
+const modal = document.getElementById('modal');
+overlay.addEventListener('click', e => { if(e.target===overlay) closeModal(); });
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+function closeModal(){ overlay.classList.remove('open'); modal.innerHTML=''; }
+function openModal(html){ modal.innerHTML = html; overlay.classList.add('open'); const f = modal.querySelector('input'); if(f) f.focus(); }
+function val(id){ return document.getElementById(id).value; }
+function num(id){ return parseFloat(val(id)) || 0; }
+
+function openEntry(itemId){
+  const it = data.items.find(i=>i.id===itemId);
+  openModal('<h3>Расход — '+esc(it.name)+'</h3>'
+    + '<div class="field"><label>Сумма, ₽</label><input id="f-amt" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></div>'
+    + '<div class="field"><label>Дата</label><input id="f-date" type="date" value="'+todayISO()+'"></div>'
+    + '<div class="field"><label>Комментарий (необязательно)</label><input id="f-note" type="text" maxlength="80"></div>'
+    + '<div class="m-actions"><button class="btn btn-ghost" onclick="closeModal()">Отмена</button>'
+    + '<button class="btn btn-primary" onclick="saveEntry(\''+itemId+'\')">Записать</button></div>');
+}
+function saveEntry(itemId){
+  const a = num('f-amt'); if(a<=0) return;
+  data.entries.push({id:uid(), itemId, amount:a, date:val('f-date')||todayISO(), note:val('f-note').trim()});
+  save(); closeModal(); render();
+}
+
+function openItemNew(cat){
+  openModal('<h3>Новая статья</h3>'
+    + '<div class="field"><label>Название</label><input id="f-name" type="text" maxlength="40"></div>'
+    + '<div class="field"><label>План на месяц, ₽</label><input id="f-plan" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></div>'
+    + '<div class="m-actions"><button class="btn btn-ghost" onclick="closeModal()">Отмена</button>'
+    + '<button class="btn btn-primary" onclick="saveItemNew(\''+cat+'\')">Добавить</button></div>');
+}
+function saveItemNew(cat){
+  const name = val('f-name').trim(); if(!name) return;
+  data.items.push({id:uid(), cat, name, plan:num('f-plan')});
+  save(); closeModal(); render();
+}
+
+function openItemEdit(id){
+  const it = data.items.find(i=>i.id===id);
+  openModal('<h3>Статья расходов</h3>'
+    + '<div class="field"><label>Название</label><input id="f-name" type="text" maxlength="40" value="'+esc(it.name)+'"></div>'
+    + '<div class="field"><label>План на месяц, ₽</label><input id="f-plan" type="number" inputmode="decimal" min="0" step="any" value="'+(it.plan||0)+'"></div>'
+    + '<div class="m-actions"><button class="btn btn-danger" onclick="delItem(\''+id+'\')">Удалить</button>'
+    + '<button class="btn btn-ghost" onclick="closeModal()">Отмена</button>'
+    + '<button class="btn btn-primary" onclick="saveItemEdit(\''+id+'\')">Сохранить</button></div>');
+}
+function saveItemEdit(id){
+  const it = data.items.find(i=>i.id===id);
+  it.name = val('f-name').trim() || it.name;
+  it.plan = num('f-plan');
+  save(); closeModal(); render();
+}
+function delItem(id){
+  if(!confirm('Удалить статью и все её записи за этот месяц?')) return;
+  data.items = data.items.filter(i=>i.id!==id);
+  data.entries = data.entries.filter(e=>e.itemId!==id);
+  save(); closeModal(); render();
+}
+
+function openWithdraw(storeId){
+  const s = data.stores.find(x=>x.id===storeId);
+  const left = (s.rate||0) - takenOf(storeId);
+  openModal('<h3>Получено — '+esc(s.name)+'</h3>'
+    + '<div class="field"><label>Сумма, ₽ (осталось '+fmt(left)+')</label><input id="f-amt" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></div>'
+    + '<div class="field"><label>Дата</label><input id="f-date" type="date" value="'+todayISO()+'"></div>'
+    + '<div class="m-actions"><button class="btn btn-ghost" onclick="closeModal()">Отмена</button>'
+    + '<button class="btn btn-primary" onclick="saveWithdraw(\''+storeId+'\')">Записать</button></div>');
+}
+function saveWithdraw(storeId){
+  const a = num('f-amt'); if(a<=0) return;
+  data.withdrawals.push({id:uid(), storeId, amount:a, date:val('f-date')||todayISO()});
+  save(); closeModal(); render();
+}
+
+function openStoreNew(){
+  openModal('<h3>Новый магазин</h3>'
+    + '<div class="field"><label>Название</label><input id="f-name" type="text" maxlength="40"></div>'
+    + '<div class="field"><label>Ставка за месяц, ₽</label><input id="f-rate" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></div>'
+    + '<div class="m-actions"><button class="btn btn-ghost" onclick="closeModal()">Отмена</button>'
+    + '<button class="btn btn-primary" onclick="saveStoreNew()">Добавить</button></div>');
+}
+function saveStoreNew(){
+  const name = val('f-name').trim(); if(!name) return;
+  data.stores.push({id:uid(), name, rate:num('f-rate')});
+  save(); closeModal(); render();
+}
+
+function openStoreEdit(id){
+  const s = data.stores.find(x=>x.id===id);
+  openModal('<h3>Магазин</h3>'
+    + '<div class="field"><label>Название</label><input id="f-name" type="text" maxlength="40" value="'+esc(s.name)+'"></div>'
+    + '<div class="field"><label>Ставка за месяц, ₽</label><input id="f-rate" type="number" inputmode="decimal" min="0" step="any" value="'+(s.rate||0)+'"></div>'
+    + '<div class="m-actions"><button class="btn btn-danger" onclick="delStore(\''+id+'\')">Удалить</button>'
+    + '<button class="btn btn-ghost" onclick="closeModal()">Отмена</button>'
+    + '<button class="btn btn-primary" onclick="saveStoreEdit(\''+id+'\')">Сохранить</button></div>');
+}
+function saveStoreEdit(id){
+  const s = data.stores.find(x=>x.id===id);
+  s.name = val('f-name').trim() || s.name;
+  s.rate = num('f-rate');
+  save(); closeModal(); render();
+}
+function delStore(id){
+  if(!confirm('Удалить магазин и его записи за этот месяц?')) return;
+  data.stores = data.stores.filter(s=>s.id!==id);
+  data.withdrawals = data.withdrawals.filter(w=>w.storeId!==id);
+  save(); closeModal(); render();
+}
+
+function delEvent(kind,id){
+  if(kind==='exp') data.entries = data.entries.filter(e=>e.id!==id);
+  else data.withdrawals = data.withdrawals.filter(w=>w.id!==id);
+  save(); render();
+}
+
+/* ---------- backup ---------- */
+document.getElementById('menuBtn').onclick = ()=>{
+  openModal('<h3>Резервная копия</h3>'
+    + '<p class="hint" style="text-align:left;margin:0 0 14px">Данные хранятся в этом браузере. Чтобы перенести их на другое устройство или сохранить на всякий случай — скачайте файл и импортируйте его там.</p>'
+    + '<div class="m-actions" style="margin-top:0;flex-direction:column">'
+    + '<button class="btn btn-primary" onclick="exportAll()">Скачать все данные (.json)</button>'
+    + '<button class="btn btn-ghost" onclick="document.getElementById(\'f-import\').click()">Импортировать из файла</button>'
+    + '</div>'
+    + '<input id="f-import" type="file" accept="application/json" style="display:none" onchange="importAll(this.files[0])">');
+};
+async function exportAll(){
+  const out = {};
+  for(const k of sKeys()){ out[k] = await sGet(k); }
+  out[mKey()] = JSON.stringify(data); // ensure current month is fresh
+  const blob = new Blob([JSON.stringify(out,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'budget-backup-' + todayISO() + '.json';
+  a.click(); URL.revokeObjectURL(a.href);
+  closeModal();
+}
+function importAll(file){
+  if(!file) return;
+  const r = new FileReader();
+  r.onload = async ()=>{
+    try{
+      const obj = JSON.parse(r.result);
+      const keys = Object.keys(obj).filter(k=>k.startsWith('budget:'));
+      if(!keys.length){ alert('В файле нет данных бюджета.'); return; }
+      for(const k of keys) await sSet(k, obj[k]);
+      closeModal(); loadMonth();
+    }catch(e){ alert('Не удалось прочитать файл.'); }
+  };
+  r.readAsText(file);
+}
+
+/* ---------- nav ---------- */
+function setTab(t){ tab=t; render(); }
+document.getElementById('prevM').onclick = ()=>{ cur.m--; if(cur.m<0){cur.m=11;cur.y--;} loadMonth(); };
+document.getElementById('nextM').onclick = ()=>{ cur.m++; if(cur.m>11){cur.m=0;cur.y++;} loadMonth(); };
+
+loadMonth();
+</script>
+</body>
+</html>
