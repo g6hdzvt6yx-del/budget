@@ -56,6 +56,26 @@
   .stat .cap{font-size:11px}
   .stat .val{font-family:var(--mono);font-weight:600;font-size:15px;margin-top:2px;font-variant-numeric:tabular-nums}
 
+  /* today */
+  .today{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-top:10px;overflow:hidden}
+  .today-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;cursor:pointer}
+  .today-head:hover{background:var(--surface2)}
+  .today-left{display:flex;align-items:center;gap:10px}
+  .today-badge{background:var(--green);color:#fff;font-size:10px;font-weight:800;letter-spacing:.06em;padding:3px 7px;border-radius:99px;text-transform:uppercase}
+  .today-date{font-weight:700;font-size:14px}
+  .today-right{display:flex;align-items:center;gap:8px}
+  .today-sum{font-family:var(--mono);font-weight:700;font-size:16px;font-variant-numeric:tabular-nums}
+  .today-caret{color:var(--muted);font-size:12px;transition:transform .15s}
+  .today.open .today-caret{transform:rotate(180deg)}
+  .today-body{display:none;border-top:1px solid var(--line)}
+  .today.open .today-body{display:block}
+  .today-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);font-size:14px}
+  .today-item:last-child{border-bottom:0}
+  .today-item .n{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:12px}
+  .today-item .n b{color:var(--ink);font-weight:600}
+  .today-item .a{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums;flex:none}
+  .today-empty{padding:14px;text-align:center;color:var(--muted);font-size:13px}
+
   /* tabs */
   .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:#E3E8E0;border-radius:12px;padding:5px;margin:16px 0 14px}
   .tabs button{border:0;border-radius:9px;padding:10px 0;font-family:inherit;font-weight:700;font-size:14px;color:var(--muted);background:transparent;cursor:pointer}
@@ -156,6 +176,20 @@
         <div class="stat"><div class="cap">Расход по плану</div><div class="val" id="stPlan"></div></div>
         <div class="stat"><div class="cap">Остаток плана</div><div class="val" id="stPlanLeft"></div></div>
       </div>
+    </div>
+
+    <div class="today" id="todayBox">
+      <div class="today-head" onclick="document.getElementById('todayBox').classList.toggle('open')">
+        <div class="today-left">
+          <span class="today-badge">Сегодня</span>
+          <span class="today-date" id="todayDate"></span>
+        </div>
+        <div class="today-right">
+          <span class="today-sum" id="todaySum">0 ₽</span>
+          <span class="today-caret">▾</span>
+        </div>
+      </div>
+      <div class="today-body" id="todayBody"></div>
     </div>
   </header>
 
@@ -287,6 +321,32 @@ function render(){
   document.getElementById('stIncome').textContent = fmt(t.income);
   document.getElementById('stPlan').textContent = fmt(t.plan);
   document.getElementById('stPlanLeft').textContent = fmt(t.planLeft);
+
+  // today
+  const today = todayISO();
+  const isCurrentMonth = (cur.y === new Date().getFullYear() && cur.m === new Date().getMonth());
+  const todayEntries = isCurrentMonth ? data.entries.filter(e => e.date === today) : [];
+  const todaySum = todayEntries.reduce((s,e) => s+e.amount, 0);
+  const td = new Date();
+  document.getElementById('todayDate').textContent = isCurrentMonth
+    ? td.getDate() + ' ' + MONTHS[td.getMonth()]
+    : 'не текущий месяц';
+  document.getElementById('todaySum').textContent = fmt(todaySum);
+  const tbody = document.getElementById('todayBody');
+  if(!isCurrentMonth){
+    tbody.innerHTML = '<div class="today-empty">Вы смотрите другой месяц.</div>';
+  } else if(!todayEntries.length){
+    tbody.innerHTML = '<div class="today-empty">Пока трат за сегодня нет.</div>';
+  } else {
+    tbody.innerHTML = todayEntries
+      .sort((a,b) => b.id.localeCompare(a.id))
+      .map(e => {
+        const it = data.items.find(i => i.id === e.itemId);
+        const name = it ? it.name : '—';
+        const note = e.note ? ' · ' + esc(e.note) : '';
+        return '<div class="today-item"><div class="n"><b>'+esc(name)+'</b>'+note+'</div><div class="a">'+fmt(e.amount)+'</div></div>';
+      }).join('');
+  }
 
   ['exp','inc','log'].forEach(id => document.getElementById('tab-'+id).classList.toggle('active', tab===id));
   const c = document.getElementById('content');
