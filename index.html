@@ -2,19 +2,25 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#F2F4EF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Бюджет">
 <title>Бюджет — план и факт</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#EFF2ED; --surface:#FFFFFF; --surface2:#F7F9F5;
-    --ink:#17211C; --muted:#69786F; --line:#DEE4DC;
-    --green:#1E7A5A; --green-soft:#E2F0E9;
-    --amber:#A85B22; --amber-soft:#F5E8DC;
-    --red:#B03A2E; --red-soft:#F6E3E0;
-    --blue:#33566E;
-    --radius:14px;
+    --bg:#F2F4EF; --surface:#FFFFFF; --surface2:#F6F8F4;
+    --ink:#17211C; --muted:#69786F; --line:#E1E6DD;
+    --slate:#57665C; --slate-soft:#E7EBE3;
+    --green:#1C8562; --green-soft:#DFF1E8; --green-dark:#146B4C;
+    --amber:#B8862E; --amber-soft:#F7EEDB;
+    --red:#C23B2E; --red-soft:#F8E2DF;
+    --blue:#2F6690; --blue-soft:#E3EDF3;
+    --radius:16px;
+    --shadow:0 1px 2px rgba(23,33,28,.05), 0 8px 20px rgba(23,33,28,.06);
     --mono:'JetBrains Mono',ui-monospace,monospace;
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -22,46 +28,50 @@
   body{
     font-family:'Manrope',system-ui,sans-serif;
     background:var(--bg); color:var(--ink);
-    min-height:100vh; padding-bottom:48px;
+    min-height:100vh; padding-bottom:calc(48px + env(safe-area-inset-bottom));
   }
-  .wrap{max-width:640px;margin:0 auto;padding:0 14px}
+  .wrap{max-width:640px;margin:0 auto;padding:0 16px}
 
   /* header */
-  header{padding:20px 0 10px}
+  header{padding:calc(16px + env(safe-area-inset-top)) 0 10px}
   .head-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
-  .brand{font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .brand{font-weight:800;font-size:19px;letter-spacing:-.02em}
   .brand span{color:var(--green)}
-  .month-nav{display:flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:4px}
-  .month-nav button{border:0;background:transparent;width:32px;height:32px;border-radius:99px;font-size:16px;cursor:pointer;color:var(--muted)}
+  .month-nav{display:flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:3px}
+  .month-nav button{border:0;background:transparent;width:36px;height:36px;border-radius:99px;font-size:16px;cursor:pointer;color:var(--muted);transition:background .12s,color .12s}
   .month-nav button:hover{background:var(--surface2);color:var(--ink)}
-  .icon-btn{width:40px;height:40px;border:1px solid var(--line);border-radius:99px;background:var(--surface);color:var(--muted);font-size:16px;cursor:pointer}
+  .month-nav button:active{background:var(--slate-soft);color:var(--ink)}
+  .icon-btn{width:44px;height:44px;border:1px solid var(--line);border-radius:99px;background:var(--surface);color:var(--muted);font-size:17px;cursor:pointer;transition:background .12s,color .12s}
   .icon-btn:hover{color:var(--ink);background:var(--surface2)}
-  .month-label{font-weight:700;font-size:14px;min-width:110px;text-align:center;text-transform:capitalize}
+  .icon-btn:active{background:var(--slate-soft);color:var(--ink)}
+  .month-label{font-weight:700;font-size:14px;min-width:108px;text-align:center;text-transform:capitalize}
 
   /* summary */
-  .summary{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-top:12px}
+  .summary{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-top:14px;box-shadow:var(--shadow)}
   .summary .cap{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
-  .big{font-family:var(--mono);font-weight:700;font-size:34px;letter-spacing:-.02em;margin:2px 0 14px;font-variant-numeric:tabular-nums}
+  .big{font-family:var(--mono);font-weight:700;font-size:36px;letter-spacing:-.02em;margin:3px 0 16px;font-variant-numeric:tabular-nums}
   .big.neg{color:var(--red)}
-  .band{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--surface2);border:1px solid var(--line)}
+  .band{display:flex;height:10px;border-radius:99px;overflow:hidden;background:var(--surface2);border:1px solid var(--line)}
   .band div{height:100%}
-  .band .seg-fact{background:var(--amber)}
-  .band .seg-plan{background:repeating-linear-gradient(45deg,#cfd8cf 0 4px,#e4eae2 4px 8px)}
+  .band .seg-fact{background:var(--slate)}
+  .band .seg-plan{background:repeating-linear-gradient(45deg,var(--line) 0 4px,var(--surface2) 4px 8px)}
   .band .seg-free{background:var(--green)}
-  .legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:12px;color:var(--muted)}
+  .legend{display:flex;flex-wrap:wrap;gap:12px 16px;margin-top:12px;font-size:12px;color:var(--muted)}
   .legend b{font-family:var(--mono);color:var(--ink);font-weight:600}
-  .dot{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px}
-  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
-  .stat{background:var(--surface2);border-radius:10px;padding:10px 12px}
-  .stat .cap{font-size:11px}
-  .stat .val{font-family:var(--mono);font-weight:600;font-size:15px;margin-top:2px;font-variant-numeric:tabular-nums}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:3px;margin-right:5px;vertical-align:1px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+  .stat{background:var(--surface2);border-radius:12px;padding:10px 12px}
+  .stat .cap{font-size:10.5px}
+  .stat .val{font-family:var(--mono);font-weight:600;font-size:15px;margin-top:3px;font-variant-numeric:tabular-nums}
+  .stat .val.neg{color:var(--red)}
 
   /* today */
   .today{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-top:10px;overflow:hidden}
-  .today-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;cursor:pointer}
+  .today-head{display:flex;justify-content:space-between;align-items:center;padding:13px 14px;cursor:pointer;transition:background .12s;min-height:44px}
   .today-head:hover{background:var(--surface2)}
+  .today-head:active{background:var(--slate-soft)}
   .today-left{display:flex;align-items:center;gap:10px}
-  .today-badge{background:var(--green);color:#fff;font-size:10px;font-weight:800;letter-spacing:.06em;padding:3px 7px;border-radius:99px;text-transform:uppercase}
+  .today-badge{background:var(--ink);color:#fff;font-size:10px;font-weight:800;letter-spacing:.06em;padding:3px 7px;border-radius:99px;text-transform:uppercase}
   .today-date{font-weight:700;font-size:14px}
   .today-right{display:flex;align-items:center;gap:8px}
   .today-sum{font-family:var(--mono);font-weight:700;font-size:16px;font-variant-numeric:tabular-nums}
@@ -77,73 +87,86 @@
   .today-empty{padding:14px;text-align:center;color:var(--muted);font-size:13px}
 
   /* tabs */
-  .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:#E3E8E0;border-radius:12px;padding:5px;margin:16px 0 14px}
-  .tabs button{border:0;border-radius:9px;padding:10px 0;font-family:inherit;font-weight:700;font-size:14px;color:var(--muted);background:transparent;cursor:pointer}
+  .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:#E3E8E0;border-radius:14px;padding:4px;margin:18px 0 16px}
+  .tabs button{border:0;border-radius:11px;padding:11px 0;font-family:inherit;font-weight:700;font-size:14px;color:var(--muted);background:transparent;cursor:pointer;transition:background .12s,color .12s}
   .tabs button.active{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(23,33,28,.08)}
+  .tabs button:active{color:var(--ink)}
 
   /* sections */
-  .cat{margin-bottom:18px}
-  .cat-head{display:flex;justify-content:space-between;align-items:baseline;padding:0 4px 8px}
-  .cat-title{font-weight:800;font-size:15px}
+  .cat{margin-bottom:20px}
+  .cat-head{display:flex;justify-content:space-between;align-items:baseline;padding:0 4px 9px}
+  .cat-title{font-weight:800;font-size:15px;display:flex;align-items:center;gap:6px}
+  .cat-title .ic{font-size:14px}
   .cat-sum{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
   .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
-  .row{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+  .row{display:flex;align-items:center;gap:12px;padding:14px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .12s}
   .row:last-child{border-bottom:0}
   .row:hover{background:var(--surface2)}
+  .row:active{background:var(--slate-soft)}
   .row .info{flex:1;min-width:0}
   .row .name{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .row .bar{height:5px;border-radius:3px;background:var(--surface2);margin-top:7px;overflow:hidden}
-  .row .bar i{display:block;height:100%;background:var(--green);border-radius:3px}
+  .row .bar{height:5px;border-radius:3px;background:var(--surface2);margin-top:8px;overflow:hidden}
+  .row .bar i{display:block;height:100%;background:var(--green);border-radius:3px;transition:background .15s}
+  .row .bar i.warn{background:var(--amber)}
   .row .bar i.over{background:var(--red)}
+  .row .bar i.take{background:var(--blue)}
   .row .nums{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
   .row .fact{font-weight:600;font-size:14px}
   .row .plan{font-size:11px;color:var(--muted);margin-top:2px}
-  .row .edit{border:0;background:transparent;color:var(--muted);font-size:15px;cursor:pointer;padding:6px;border-radius:8px}
+  .row .edit{border:0;background:transparent;color:var(--muted);font-size:15px;cursor:pointer;padding:8px;border-radius:8px;line-height:1}
   .row .edit:hover{background:var(--line);color:var(--ink)}
-  .add-line{display:block;width:100%;border:0;background:transparent;color:var(--green);font-family:inherit;font-weight:700;font-size:13px;padding:12px;cursor:pointer}
+  .row .edit:active{background:var(--slate-soft)}
+  .add-line{display:block;width:100%;border:0;background:transparent;color:var(--green);font-family:inherit;font-weight:700;font-size:13px;padding:14px;cursor:pointer;min-height:44px}
   .add-line:hover{background:var(--green-soft)}
+  .add-line:active{background:var(--green-soft)}
 
   .left-pos{color:var(--green)} .left-zero{color:var(--muted)}
 
   /* journal */
-  .day-head{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:14px 4px 6px}
-  .jrow{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
+  .day-head{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:16px 4px 7px}
+  .jrow{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line)}
   .jrow:last-child{border-bottom:0}
   .jrow .tag{width:8px;height:8px;border-radius:99px;flex:none}
-  .jrow .t-exp{background:var(--amber)} .jrow .t-inc{background:var(--green)}
+  .jrow .t-exp{background:var(--slate)} .jrow .t-inc{background:var(--green)}
   .jrow .info{flex:1;min-width:0}
   .jrow .name{font-weight:600;font-size:14px}
   .jrow .note{font-size:12px;color:var(--muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .jrow .amt{font-family:var(--mono);font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
   .jrow .amt.inc{color:var(--green)}
-  .jrow .del{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:15px;padding:6px;border-radius:8px}
+  .jrow .del{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:15px;padding:8px;border-radius:8px;line-height:1}
   .jrow .del:hover{background:var(--red-soft);color:var(--red)}
+  .jrow .del:active{background:var(--red-soft);color:var(--red)}
   .empty{padding:34px 20px;text-align:center;color:var(--muted);font-size:14px}
 
   /* modal */
   .overlay{position:fixed;inset:0;background:rgba(23,33,28,.45);display:none;align-items:flex-end;justify-content:center;z-index:50}
   .overlay.open{display:flex}
-  .modal{background:var(--surface);border-radius:18px 18px 0 0;width:100%;max-width:640px;padding:20px 18px 26px;animation:up .18s ease}
+  .modal{position:relative;background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:640px;padding:26px 18px calc(26px + env(safe-area-inset-bottom));animation:up .18s ease}
+  .modal::before{content:'';position:absolute;top:9px;left:50%;transform:translateX(-50%);width:36px;height:4px;border-radius:99px;background:var(--line)}
   @keyframes up{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
   @media(prefers-reduced-motion:reduce){.modal{animation:none}}
   .modal h3{font-size:17px;font-weight:800;margin-bottom:14px}
   .field{margin-bottom:12px}
   .field label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px}
-  .field input,.field select{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-family:inherit;font-size:15px;background:var(--surface2);color:var(--ink)}
+  .field input,.field select{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;font-family:inherit;font-size:16px;background:var(--surface2);color:var(--ink)}
   .field input[type=number]{font-family:var(--mono)}
   .field input:focus,.field select:focus{outline:2px solid var(--green);outline-offset:-1px;background:#fff}
   .m-actions{display:flex;gap:8px;margin-top:16px}
-  .btn{flex:1;border:0;border-radius:11px;padding:13px;font-family:inherit;font-weight:800;font-size:15px;cursor:pointer}
+  .btn{flex:1;border:0;border-radius:12px;padding:14px;font-family:inherit;font-weight:800;font-size:15px;cursor:pointer;transition:background .12s,transform .08s}
   .btn-primary{background:var(--green);color:#fff}
-  .btn-primary:hover{background:#186349}
+  .btn-primary:hover{background:var(--green-dark)}
+  .btn-primary:active{background:var(--green-dark);transform:scale(.98)}
   .btn-ghost{background:var(--surface2);color:var(--ink)}
-  .btn-danger{background:transparent;color:var(--red);flex:0 0 auto;padding:13px 14px}
+  .btn-ghost:active{background:var(--slate-soft)}
+  .btn-danger{background:transparent;color:var(--red);flex:0 0 auto;padding:14px}
   .btn-danger:hover{background:var(--red-soft)}
+  .btn-danger:active{background:var(--red-soft)}
   .hint{font-size:12px;color:var(--muted);margin-top:8px;text-align:center}
 
   @media(min-width:520px){
     .overlay{align-items:center;padding:20px}
-    .modal{border-radius:18px;max-width:420px}
+    .modal{border-radius:20px;max-width:420px;padding:22px 18px 24px}
+    .modal::before{display:none}
   }
 </style>
 </head>
@@ -167,8 +190,8 @@
       <div class="big" id="bigLeft">0 ₽</div>
       <div class="band" id="band"></div>
       <div class="legend">
-        <span><i class="dot" style="background:var(--amber)"></i>Потрачено <b id="lgFact"></b></span>
-        <span><i class="dot" style="background:#cfd8cf"></i>Ещё по плану <b id="lgPlan"></b></span>
+        <span><i class="dot" style="background:var(--slate)"></i>Потрачено <b id="lgFact"></b></span>
+        <span><i class="dot" style="background:var(--line)"></i>Ещё по плану <b id="lgPlan"></b></span>
         <span><i class="dot" style="background:var(--green)"></i>Свободно <b id="lgFree"></b></span>
       </div>
       <div class="stats">
@@ -207,9 +230,9 @@
 <script>
 /* ---------- constants ---------- */
 const CATS = [
-  {id:'need',   label:'Потребности'},
-  {id:'want',   label:'Желания'},
-  {id:'invest', label:'Инвестиции / долг'},
+  {id:'need',   label:'Потребности', icon:'🏠'},
+  {id:'want',   label:'Желания', icon:'✨'},
+  {id:'invest', label:'Инвестиции / долг', icon:'📈'},
 ];
 const MONTHS = ['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
 
@@ -320,7 +343,9 @@ function render(){
   document.getElementById('lgFree').textContent = fmt(free);
   document.getElementById('stIncome').textContent = fmt(t.income);
   document.getElementById('stPlan').textContent = fmt(t.plan);
-  document.getElementById('stPlanLeft').textContent = fmt(t.planLeft);
+  const stPlanLeftEl = document.getElementById('stPlanLeft');
+  stPlanLeftEl.textContent = fmt(t.planLeft);
+  stPlanLeftEl.classList.toggle('neg', t.planLeft < 0);
 
   // today
   const today = todayISO();
@@ -366,15 +391,17 @@ function viewExpenses(){
       const f = factOf(i.id);
       const pct = i.plan>0 ? Math.min(100, f/i.plan*100) : (f>0?100:0);
       const over = i.plan>0 && f>i.plan;
+      const warn = !over && i.plan>0 && pct>=80;
+      const barClass = over ? 'over' : (warn ? 'warn' : '');
       return '<div class="row" onclick="openEntry(\''+i.id+'\')">'
         + '<div class="info"><div class="name">'+esc(i.name)+'</div>'
-        + '<div class="bar"><i class="'+(over?'over':'')+'" style="width:'+pct+'%"></i></div></div>'
+        + '<div class="bar"><i class="'+barClass+'" style="width:'+pct+'%"></i></div></div>'
         + '<div class="nums"><div class="fact"'+(over?' style="color:var(--red)"':'')+'>'+fmt(f)+'</div>'
         + '<div class="plan">план '+fmt(i.plan||0)+'</div></div>'
         + '<button class="edit" aria-label="Изменить" onclick="event.stopPropagation();openItemEdit(\''+i.id+'\')">✎</button>'
         + '</div>';
     }).join('');
-    return '<section class="cat"><div class="cat-head"><div class="cat-title">'+cat.label+'</div>'
+    return '<section class="cat"><div class="cat-head"><div class="cat-title"><span class="ic">'+cat.icon+'</span>'+cat.label+'</div>'
       + '<div class="cat-sum">'+fmt(catFact)+' / '+fmt(catPlan)+'</div></div>'
       + '<div class="card">'+rows
       + '<button class="add-line" onclick="openItemNew(\''+cat.id+'\')">+ Добавить статью</button></div></section>';
@@ -386,7 +413,7 @@ function viewIncome(){
     const taken = takenOf(s.id), left = (s.rate||0) - taken;
     return '<div class="row" onclick="openWithdraw(\''+s.id+'\')">'
       + '<div class="info"><div class="name">'+esc(s.name)+'</div>'
-      + '<div class="bar"><i style="width:'+(s.rate>0?Math.min(100,taken/s.rate*100):0)+'%"></i></div></div>'
+      + '<div class="bar"><i class="take" style="width:'+(s.rate>0?Math.min(100,taken/s.rate*100):0)+'%"></i></div></div>'
       + '<div class="nums"><div class="fact '+(left>0?'left-pos':'left-zero')+'">'+fmt(left)+'</div>'
       + '<div class="plan">забрал '+fmt(taken)+' из '+fmt(s.rate||0)+'</div></div>'
       + '<button class="edit" aria-label="Изменить" onclick="event.stopPropagation();openStoreEdit(\''+s.id+'\')">✎</button>'
@@ -394,7 +421,7 @@ function viewIncome(){
   }).join('');
   const totalRate = data.stores.reduce((s,x)=>s+(x.rate||0),0);
   const totalTaken = data.stores.reduce((s,x)=>s+takenOf(x.id),0);
-  return '<section class="cat"><div class="cat-head"><div class="cat-title">Магазины</div>'
+  return '<section class="cat"><div class="cat-head"><div class="cat-title"><span class="ic">🏪</span>Магазины</div>'
     + '<div class="cat-sum">осталось '+fmt(totalRate-totalTaken)+' из '+fmt(totalRate)+'</div></div>'
     + '<div class="card">'+rows
     + '<button class="add-line" onclick="openStoreNew()">+ Добавить магазин</button></div>'
