@@ -70,21 +70,45 @@
   .today-head{display:flex;justify-content:space-between;align-items:center;padding:13px 14px;cursor:pointer;transition:background .12s;min-height:44px}
   .today-head:hover{background:var(--surface2)}
   .today-head:active{background:var(--slate-soft)}
-  .today-left{display:flex;align-items:center;gap:10px}
-  .today-badge{background:var(--ink);color:#fff;font-size:10px;font-weight:800;letter-spacing:.06em;padding:3px 7px;border-radius:99px;text-transform:uppercase}
-  .today-date{font-weight:700;font-size:14px}
+  .today-left{display:flex;align-items:center;gap:0}
+  .today-badge{background:var(--ink);color:#fff;font-size:10px;font-weight:800;letter-spacing:.06em;padding:3px 7px;border-radius:99px;text-transform:uppercase;margin-right:8px;flex:none}
+  .day-step{border:0;background:transparent;color:var(--muted);font-size:16px;cursor:pointer;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:9px;flex:none}
+  .day-step:hover{background:var(--surface2);color:var(--ink)}
+  .day-step:active{background:var(--slate-soft);color:var(--ink)}
+  .today-date{font-weight:700;font-size:14px;cursor:pointer;padding:4px 8px;border-radius:8px}
+  .today-date:hover{background:var(--surface2)}
+  .today-date:active{background:var(--slate-soft)}
   .today-right{display:flex;align-items:center;gap:8px}
   .today-sum{font-family:var(--mono);font-weight:700;font-size:16px;font-variant-numeric:tabular-nums}
   .today-caret{color:var(--muted);font-size:12px;transition:transform .15s}
   .today.open .today-caret{transform:rotate(180deg)}
   .today-body{display:none;border-top:1px solid var(--line)}
   .today.open .today-body{display:block}
-  .today-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);font-size:14px}
+  .today-item{display:flex;align-items:center;gap:8px;padding:10px 10px 10px 14px;border-bottom:1px solid var(--line);font-size:14px;cursor:pointer;transition:background .12s}
   .today-item:last-child{border-bottom:0}
-  .today-item .n{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:12px}
+  .today-item:hover{background:var(--surface2)}
+  .today-item:active{background:var(--slate-soft)}
+  .today-item .n{flex:1;min-width:0;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .today-item .n b{color:var(--ink);font-weight:600}
   .today-item .a{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums;flex:none}
+  .today-item .edit{border:0;background:transparent;color:var(--muted);font-size:15px;cursor:pointer;padding:8px;border-radius:8px;line-height:1;flex:none}
+  .today-item .edit:hover{background:var(--line);color:var(--ink)}
   .today-empty{padding:14px;text-align:center;color:var(--muted);font-size:13px}
+
+  /* calendar */
+  .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .cal-head{font-weight:800;font-size:15px;text-transform:capitalize}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .cal-dow{margin-bottom:4px}
+  .cal-dow-cell{font-size:11px;font-weight:700;color:var(--muted);text-align:center;text-transform:uppercase}
+  .cal-cell{position:relative;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:10px;font-family:var(--mono);font-size:14px;font-weight:600;cursor:pointer;color:var(--ink);transition:background .12s}
+  .cal-cell.empty{cursor:default}
+  .cal-cell:not(.empty):hover{background:var(--surface2)}
+  .cal-cell:not(.empty):active{background:var(--slate-soft)}
+  .cal-cell.today{box-shadow:inset 0 0 0 2px var(--green)}
+  .cal-cell.sel{background:var(--ink);color:#fff}
+  .cal-dot{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:99px;background:var(--green)}
+  .cal-cell.sel .cal-dot{background:#fff}
 
   /* tabs */
   .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:#E3E8E0;border-radius:14px;padding:4px;margin:18px 0 16px}
@@ -133,6 +157,9 @@
   .jrow .note{font-size:12px;color:var(--muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .jrow .amt{font-family:var(--mono);font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
   .jrow .amt.inc{color:var(--green)}
+  .jrow .edit{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:15px;padding:8px;border-radius:8px;line-height:1}
+  .jrow .edit:hover{background:var(--line);color:var(--ink)}
+  .jrow .edit:active{background:var(--slate-soft)}
   .jrow .del{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:15px;padding:8px;border-radius:8px;line-height:1}
   .jrow .del:hover{background:var(--red-soft);color:var(--red)}
   .jrow .del:active{background:var(--red-soft);color:var(--red)}
@@ -204,8 +231,10 @@
     <div class="today" id="todayBox">
       <div class="today-head" onclick="document.getElementById('todayBox').classList.toggle('open')">
         <div class="today-left">
-          <span class="today-badge">Сегодня</span>
-          <span class="today-date" id="todayDate"></span>
+          <span class="today-badge" id="todayBadge"></span>
+          <button class="day-step" aria-label="Предыдущий день" onclick="event.stopPropagation();stepDay(-1)">‹</button>
+          <span class="today-date" id="todayDate" onclick="event.stopPropagation();openCalendarModal()"></span>
+          <button class="day-step" aria-label="Следующий день" onclick="event.stopPropagation();stepDay(1)">›</button>
         </div>
         <div class="today-right">
           <span class="today-sum" id="todaySum">0 ₽</span>
@@ -250,6 +279,7 @@ const SEED_STORES = ['Инжир 1','Инжир 2','Инжир 3','Инжир 4'
 let cur = new Date(); cur = {y:cur.getFullYear(), m:cur.getMonth()};
 let data = null;
 let tab = 'exp';
+let selectedDay = null;                // ISO date within cur month, or null = default
 let memStore = {};                     // fallback if window.storage is unavailable
 let saveTimer = null;
 
@@ -257,6 +287,13 @@ const uid = () => Math.random().toString(36).slice(2,9);
 const mKey = () => 'budget:' + cur.y + '-' + String(cur.m+1).padStart(2,'0');
 const fmt = n => (Math.round(n)||0).toLocaleString('ru-RU') + ' ₽';
 const todayISO = () => new Date().toISOString().slice(0,10);
+const isoDate = (y,m,d) => y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+const WEEKDAYS = ['пн','вт','ср','чт','пт','сб','вс'];
+function getActiveDay(){
+  if(selectedDay) return selectedDay;
+  const isCurrentMonth = (cur.y === new Date().getFullYear() && cur.m === new Date().getMonth());
+  return isCurrentMonth ? todayISO() : isoDate(cur.y, cur.m, 1);
+}
 
 function blank(){
   return {
@@ -347,29 +384,27 @@ function render(){
   stPlanLeftEl.textContent = fmt(t.planLeft);
   stPlanLeftEl.classList.toggle('neg', t.planLeft < 0);
 
-  // today
-  const today = todayISO();
-  const isCurrentMonth = (cur.y === new Date().getFullYear() && cur.m === new Date().getMonth());
-  const todayEntries = isCurrentMonth ? data.entries.filter(e => e.date === today) : [];
-  const todaySum = todayEntries.reduce((s,e) => s+e.amount, 0);
-  const td = new Date();
-  document.getElementById('todayDate').textContent = isCurrentMonth
-    ? td.getDate() + ' ' + MONTHS[td.getMonth()]
-    : 'не текущий месяц';
-  document.getElementById('todaySum').textContent = fmt(todaySum);
+  // day view
+  const activeDay = getActiveDay();
+  const isToday = activeDay === todayISO();
+  const dayEntries = data.entries.filter(e => e.date === activeDay);
+  const daySum = dayEntries.reduce((s,e) => s+e.amount, 0);
+  const dISO = new Date(activeDay+'T00:00:00');
+  document.getElementById('todayBadge').textContent = isToday ? 'Сегодня' : WEEKDAYS[(dISO.getDay()+6)%7];
+  document.getElementById('todayDate').textContent = dISO.getDate() + ' ' + MONTHS[dISO.getMonth()];
+  document.getElementById('todaySum').textContent = fmt(daySum);
   const tbody = document.getElementById('todayBody');
-  if(!isCurrentMonth){
-    tbody.innerHTML = '<div class="today-empty">Вы смотрите другой месяц.</div>';
-  } else if(!todayEntries.length){
-    tbody.innerHTML = '<div class="today-empty">Пока трат за сегодня нет.</div>';
+  if(!dayEntries.length){
+    tbody.innerHTML = '<div class="today-empty">'+(isToday ? 'Пока трат за сегодня нет.' : 'В этот день трат не было.')+'</div>';
   } else {
-    tbody.innerHTML = todayEntries
+    tbody.innerHTML = dayEntries
       .sort((a,b) => b.id.localeCompare(a.id))
       .map(e => {
         const it = data.items.find(i => i.id === e.itemId);
         const name = it ? it.name : '—';
         const note = e.note ? ' · ' + esc(e.note) : '';
-        return '<div class="today-item"><div class="n"><b>'+esc(name)+'</b>'+note+'</div><div class="a">'+fmt(e.amount)+'</div></div>';
+        return '<div class="today-item" onclick="openEditEntry(\''+e.id+'\')"><div class="n"><b>'+esc(name)+'</b>'+note+'</div><div class="a">'+fmt(e.amount)+'</div>'
+          + '<button class="edit" aria-label="Изменить" onclick="event.stopPropagation();openEditEntry(\''+e.id+'\')">✎</button></div>';
       }).join('');
   }
 
@@ -446,6 +481,7 @@ function viewLog(){
       + '<div class="info"><div class="name">'+esc(ev.label)+'</div>'
       + (ev.note ? '<div class="note">'+esc(ev.note)+'</div>' : '')
       + '</div><div class="amt'+(ev.kind==='inc'?' inc':'')+'">'+(ev.kind==='inc'?'+':'−')+fmt(ev.amount)+'</div>'
+      + '<button class="edit" aria-label="Изменить" onclick="openEditEvent(\''+ev.kind+'\',\''+ev.id+'\')">✎</button>'
       + '<button class="del" aria-label="Удалить" onclick="delEvent(\''+ev.kind+'\',\''+ev.id+'\')">✕</button></div>';
   }
   return html + '</div>';
@@ -473,6 +509,43 @@ function openEntry(itemId){
 function saveEntry(itemId){
   const a = num('f-amt'); if(a<=0) return;
   data.entries.push({id:uid(), itemId, amount:a, date:val('f-date')||todayISO(), note:val('f-note').trim()});
+  save(); closeModal(); render();
+}
+
+function openEditEvent(kind,id){
+  if(kind==='exp') openEditEntry(id); else openEditWithdraw(id);
+}
+function openEditEntry(id){
+  const e = data.entries.find(x=>x.id===id); if(!e) return;
+  const it = data.items.find(i=>i.id===e.itemId);
+  openModal('<h3>Изменить расход'+(it?' — '+esc(it.name):'')+'</h3>'
+    + '<div class="field"><label>Сумма, ₽</label><input id="f-amt" type="number" inputmode="decimal" min="0" step="any" value="'+e.amount+'"></div>'
+    + '<div class="field"><label>Дата</label><input id="f-date" type="date" value="'+e.date+'"></div>'
+    + '<div class="field"><label>Комментарий (необязательно)</label><input id="f-note" type="text" maxlength="80" value="'+esc(e.note||'')+'"></div>'
+    + '<div class="m-actions"><button class="btn btn-danger" onclick="delEvent(\'exp\',\''+id+'\');closeModal()">Удалить</button>'
+    + '<button class="btn btn-ghost" onclick="closeModal()">Отмена</button>'
+    + '<button class="btn btn-primary" onclick="saveEditEntry(\''+id+'\')">Сохранить</button></div>');
+}
+function saveEditEntry(id){
+  const e = data.entries.find(x=>x.id===id); if(!e) return;
+  const a = num('f-amt'); if(a<=0) return;
+  e.amount = a; e.date = val('f-date')||e.date; e.note = val('f-note').trim();
+  save(); closeModal(); render();
+}
+function openEditWithdraw(id){
+  const w = data.withdrawals.find(x=>x.id===id); if(!w) return;
+  const s = data.stores.find(x=>x.id===w.storeId);
+  openModal('<h3>Изменить доход'+(s?' — '+esc(s.name):'')+'</h3>'
+    + '<div class="field"><label>Сумма, ₽</label><input id="f-amt" type="number" inputmode="decimal" min="0" step="any" value="'+w.amount+'"></div>'
+    + '<div class="field"><label>Дата</label><input id="f-date" type="date" value="'+w.date+'"></div>'
+    + '<div class="m-actions"><button class="btn btn-danger" onclick="delEvent(\'inc\',\''+id+'\');closeModal()">Удалить</button>'
+    + '<button class="btn btn-ghost" onclick="closeModal()">Отмена</button>'
+    + '<button class="btn btn-primary" onclick="saveEditWithdraw(\''+id+'\')">Сохранить</button></div>');
+}
+function saveEditWithdraw(id){
+  const w = data.withdrawals.find(x=>x.id===id); if(!w) return;
+  const a = num('f-amt'); if(a<=0) return;
+  w.amount = a; w.date = val('f-date')||w.date;
   save(); closeModal(); render();
 }
 
@@ -603,10 +676,60 @@ function importAll(file){
   r.readAsText(file);
 }
 
+/* ---------- day navigation & calendar ---------- */
+function stepDay(delta){
+  const base = new Date(getActiveDay()+'T00:00:00');
+  base.setDate(base.getDate()+delta);
+  const y = base.getFullYear(), m = base.getMonth(), iso = isoDate(y,m,base.getDate());
+  if(y!==cur.y || m!==cur.m){
+    cur = {y,m}; selectedDay = iso; loadMonth();
+  } else {
+    selectedDay = iso; render();
+  }
+}
+function openCalendarModal(){
+  openModal('<h3>Выберите день</h3>'
+    + '<div class="cal-nav"><button class="day-step" aria-label="Предыдущий месяц" onclick="calMoveMonth(-1)">‹</button>'
+    + '<div class="cal-head">'+MONTHS[cur.m]+' '+cur.y+'</div>'
+    + '<button class="day-step" aria-label="Следующий месяц" onclick="calMoveMonth(1)">›</button></div>'
+    + buildCalendarGrid());
+}
+function buildCalendarGrid(){
+  const y = cur.y, m = cur.m;
+  const startDow = (new Date(y,m,1).getDay()+6)%7;
+  const daysInMonth = new Date(y,m+1,0).getDate();
+  const activeDay = getActiveDay(), today = todayISO();
+  const hasData = {};
+  data.entries.forEach(e=>hasData[e.date]=true);
+  data.withdrawals.forEach(w=>hasData[w.date]=true);
+  let html = '<div class="cal-grid cal-dow">'+WEEKDAYS.map(d=>'<div class="cal-dow-cell">'+d+'</div>').join('')+'</div>';
+  html += '<div class="cal-grid">';
+  for(let i=0;i<startDow;i++) html += '<div class="cal-cell empty"></div>';
+  for(let d=1; d<=daysInMonth; d++){
+    const iso = isoDate(y,m,d);
+    const cls = ['cal-cell'];
+    if(iso===activeDay) cls.push('sel'); else if(iso===today) cls.push('today');
+    html += '<div class="'+cls.join(' ')+'" onclick="pickDay(\''+iso+'\')">'+d+(hasData[iso]?'<i class="cal-dot"></i>':'')+'</div>';
+  }
+  return html + '</div>';
+}
+function calMoveMonth(delta){
+  cur.m += delta;
+  if(cur.m<0){cur.m=11;cur.y--;}
+  if(cur.m>11){cur.m=0;cur.y++;}
+  loadMonth().then(openCalendarModal);
+}
+function pickDay(iso){
+  selectedDay = iso;
+  closeModal();
+  document.getElementById('todayBox').classList.add('open');
+  render();
+}
+
 /* ---------- nav ---------- */
 function setTab(t){ tab=t; render(); }
-document.getElementById('prevM').onclick = ()=>{ cur.m--; if(cur.m<0){cur.m=11;cur.y--;} loadMonth(); };
-document.getElementById('nextM').onclick = ()=>{ cur.m++; if(cur.m>11){cur.m=0;cur.y++;} loadMonth(); };
+document.getElementById('prevM').onclick = ()=>{ cur.m--; if(cur.m<0){cur.m=11;cur.y--;} selectedDay=null; loadMonth(); };
+document.getElementById('nextM').onclick = ()=>{ cur.m++; if(cur.m>11){cur.m=0;cur.y++;} selectedDay=null; loadMonth(); };
 
 loadMonth();
 </script>
