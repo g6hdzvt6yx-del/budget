@@ -286,8 +286,8 @@ let saveTimer = null;
 const uid = () => Math.random().toString(36).slice(2,9);
 const mKey = () => 'budget:' + cur.y + '-' + String(cur.m+1).padStart(2,'0');
 const fmt = n => (Math.round(n)||0).toLocaleString('ru-RU') + ' ₽';
-const todayISO = () => new Date().toISOString().slice(0,10);
 const isoDate = (y,m,d) => y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+const todayISO = () => { const d = new Date(); return isoDate(d.getFullYear(), d.getMonth(), d.getDate()); };
 const WEEKDAYS = ['пн','вт','ср','чт','пт','сб','вс'];
 function getActiveDay(){
   if(selectedDay) return selectedDay;
