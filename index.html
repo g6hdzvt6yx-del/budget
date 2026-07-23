@@ -281,7 +281,6 @@ let data = null;
 let tab = 'exp';
 let selectedDay = null;                // ISO date within cur month, or null = default
 let memStore = {};                     // fallback if window.storage is unavailable
-let saveTimer = null;
 
 const uid = () => Math.random().toString(36).slice(2,9);
 const mKey = () => 'budget:' + cur.y + '-' + String(cur.m+1).padStart(2,'0');
@@ -322,8 +321,7 @@ function sKeys(){
   return keys;
 }
 function save(){
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(()=> sSet(mKey(), JSON.stringify(data)), 300);
+  sSet(mKey(), JSON.stringify(data));
 }
 
 async function loadMonth(){
@@ -522,7 +520,7 @@ function openEditEntry(id){
     + '<div class="field"><label>Сумма, ₽</label><input id="f-amt" type="number" inputmode="decimal" min="0" step="any" value="'+e.amount+'"></div>'
     + '<div class="field"><label>Дата</label><input id="f-date" type="date" value="'+e.date+'"></div>'
     + '<div class="field"><label>Комментарий (необязательно)</label><input id="f-note" type="text" maxlength="80" value="'+esc(e.note||'')+'"></div>'
-    + '<div class="m-actions"><button class="btn btn-danger" onclick="delEvent(\'exp\',\''+id+'\');closeModal()">Удалить</button>'
+    + '<div class="m-actions"><button class="btn btn-danger" onclick="delEvent(\'exp\',\''+id+'\')">Удалить</button>'
     + '<button class="btn btn-ghost" onclick="closeModal()">Отмена</button>'
     + '<button class="btn btn-primary" onclick="saveEditEntry(\''+id+'\')">Сохранить</button></div>');
 }
@@ -538,7 +536,7 @@ function openEditWithdraw(id){
   openModal('<h3>Изменить доход'+(s?' — '+esc(s.name):'')+'</h3>'
     + '<div class="field"><label>Сумма, ₽</label><input id="f-amt" type="number" inputmode="decimal" min="0" step="any" value="'+w.amount+'"></div>'
     + '<div class="field"><label>Дата</label><input id="f-date" type="date" value="'+w.date+'"></div>'
-    + '<div class="m-actions"><button class="btn btn-danger" onclick="delEvent(\'inc\',\''+id+'\');closeModal()">Удалить</button>'
+    + '<div class="m-actions"><button class="btn btn-danger" onclick="delEvent(\'inc\',\''+id+'\')">Удалить</button>'
     + '<button class="btn btn-ghost" onclick="closeModal()">Отмена</button>'
     + '<button class="btn btn-primary" onclick="saveEditWithdraw(\''+id+'\')">Сохранить</button></div>');
 }
@@ -635,9 +633,10 @@ function delStore(id){
 }
 
 function delEvent(kind,id){
+  if(!confirm(kind==='exp' ? 'Удалить эту трату?' : 'Удалить эту запись дохода?')) return;
   if(kind==='exp') data.entries = data.entries.filter(e=>e.id!==id);
   else data.withdrawals = data.withdrawals.filter(w=>w.id!==id);
-  save(); render();
+  save(); closeModal(); render();
 }
 
 /* ---------- backup ---------- */
